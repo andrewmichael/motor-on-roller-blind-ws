@@ -15,8 +15,8 @@
 
 //--------------- CHANGE PARAMETERS ------------------
 //Configure Default Settings for Access Point logon
-String APid = "BlindsConnectAP";    //Name of access point
-String APpw = "nidayand";           //Hardcoded password for access point
+String APid = "blinds";    //Name of access point
+String APpw = "bl1nd54p";           //Hardcoded password for access point
 
 //----------------------------------------------------
 
@@ -158,8 +158,9 @@ void processMsg(String res, uint8_t clientnum){
     //Send position details to client
     int set = (setPos * 100)/maxPosition;
     int pos = (currentPosition * 100)/maxPosition;
-    sendmsg(outputTopic, "{ \"set\":"+String(set)+", \"position\":"+String(pos)+" }");
-    webSocket.sendTXT(clientnum, "{ \"set\":"+String(set)+", \"position\":"+String(pos)+" }");
+    String message = "{ \"set\":"+String(set)+", \"position\":"+String(pos)+" }";
+    sendmsg(outputTopic, message);
+    webSocket.sendTXT(clientnum, message);
   } else if (res == "(ping)") {
     //Do nothing
   } else {
@@ -176,8 +177,9 @@ void processMsg(String res, uint8_t clientnum){
     int pos = (currentPosition * 100)/maxPosition;
 
     //Send the instruction to all connected devices
-    sendmsg(outputTopic, "{ \"set\":"+String(set)+", \"position\":"+String(pos)+" }");
-    webSocket.broadcastTXT("{ \"set\":"+String(set)+", \"position\":"+String(pos)+" }");
+    String message = "{ \"set\":"+String(set)+", \"position\":"+String(pos)+" }";
+    sendmsg(outputTopic, message);
+    webSocket.broadcastTXT(message);
   }
 }
 
@@ -322,6 +324,7 @@ void setup(void)
   /*
     Setup multi DNS (Bonjour)
     */
+  Serial.println("ConfigName: " + String(config_name));
   if (MDNS.begin(config_name)) {
     Serial.println("MDNS responder started");
     MDNS.addService("http", "tcp", 80);
@@ -452,8 +455,9 @@ void loop(void)
       action = "";
       int set = (setPos * 100)/maxPosition;
       int pos = (currentPosition * 100)/maxPosition;
-      webSocket.broadcastTXT("{ \"set\":"+String(set)+", \"position\":"+String(pos)+" }");
-      sendmsg(outputTopic, "{ \"set\":"+String(set)+", \"position\":"+String(pos)+" }");
+      String message = "{ \"set\":"+String(set)+", \"position\":"+String(pos)+" }";
+      webSocket.broadcastTXT(message);
+      sendmsg(outputTopic, message);
       Serial.println("Stopped. Reached wanted position");
       saveItNow = true;
     }
