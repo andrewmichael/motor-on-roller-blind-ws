@@ -12,6 +12,9 @@
 #include <ArduinoOTA.h>
 #include "NidayandHelper.h"
 #include "index_html.h"
+#include <DebounceEvent.h>
+
+#define BUTTON_PIN          5
 
 //--------------- CHANGE PARAMETERS ------------------
 //Configure Default Settings for Access Point logon
@@ -49,11 +52,38 @@ boolean saveItNow = false;          //If true will store positions to SPIFFS
 bool shouldSaveConfig = false;      //Used for WIFI Manager callback to save parameters
 boolean initLoop = true;            //To enable actions first time the loop is run
 boolean ccw = true;                 //Turns counter clockwise to lower the curtain
+boolean toggle = true;              //Switch toggle for up down
 
 Stepper_28BYJ_48 small_stepper(D1, D3, D2, D4); //Initiate stepper driver
 
 ESP8266WebServer server(80);              // TCP server at port 80 will respond to HTTP requests
 WebSocketsServer webSocket = WebSocketsServer(81);  // WebSockets will respond on port 81
+
+void button_callback(uint8_t pin, uint8_t event, uint8_t count, uint16_t length) {
+  
+  Serial.print("Event : "); Serial.print(event);
+  Serial.print("Count : "); Serial.print(count);
+  Serial.print("Length: "); Serial.print(length);
+  Serial.println();
+
+  String direction;
+  toggle = !toggle;
+  
+  if (length > 1000) {
+    // stop
+    direction = "(0)";
+  } else {
+    if (toggle) {
+      direction = "(-1)";  
+    } else {
+      direction = "(1)";
+    }
+  }
+  
+  processMsg(direction, NULL);
+}
+
+DebounceEvent button = DebounceEvent(BUTTON_PIN, button_callback, BUTTON_PUSHBUTTON | BUTTON_DEFAULT_HIGH | BUTTON_SET_PULLUP);
 
 bool loadConfig() {
   if (!helper.loadconfig()){
@@ -409,6 +439,9 @@ void loop(void)
 
   //Websocket listner
   webSocket.loop();
+
+  //button listener
+  button.loop();
 
   /**
     Serving the webpage
