@@ -4,6 +4,7 @@
 #include <PubSubClient.h>
 #include <WiFiUdp.h>
 #include <WiFiManager.h>
+#include <Arduino.h>>
 #include <ArduinoJson.h>
 #include "FS.h"
 #include <WiFiClient.h>
@@ -14,7 +15,7 @@
 #include "index_html.h"
 #include <DebounceEvent.h>
 
-#define BUTTON_PIN          5
+#define BUTTON_PIN          14
 
 //--------------- CHANGE PARAMETERS ------------------
 //Configure Default Settings for Access Point logon
@@ -60,27 +61,30 @@ ESP8266WebServer server(80);              // TCP server at port 80 will respond 
 WebSocketsServer webSocket = WebSocketsServer(81);  // WebSockets will respond on port 81
 
 void button_callback(uint8_t pin, uint8_t event, uint8_t count, uint16_t length) {
-  
+
   Serial.print("Event : "); Serial.print(event);
   Serial.print("Count : "); Serial.print(count);
   Serial.print("Length: "); Serial.print(length);
   Serial.println();
 
   String direction;
-  toggle = !toggle;
   
   if (length > 1000) {
     // stop
     direction = "(0)";
-  } else {
-    if (toggle) {
-      direction = "(-1)";  
-    } else {
-      direction = "(1)";
-    }
-  }
+    processMsg(direction, NULL);
+    return;
+  } 
   
-  processMsg(direction, NULL);
+  if (length == 0) {
+    toggle = !toggle;
+    if (toggle) {
+      direction = "100";  
+    } else {
+      direction = "0";
+    }
+    processMsg(direction, NULL);    
+  }
 }
 
 DebounceEvent button = DebounceEvent(BUTTON_PIN, button_callback, BUTTON_PUSHBUTTON | BUTTON_DEFAULT_HIGH | BUTTON_SET_PULLUP);
