@@ -69,14 +69,14 @@ void button_callback(uint8_t pin, uint8_t event, uint8_t count, uint16_t length)
 
   String direction;
   
-  if (length > 1000) {
+  if (length >= 1000) {
     // stop
     direction = "(0)";
     processMsg(direction, NULL);
     return;
   } 
   
-  if (length == 0) {
+  if (length > 0 && length < 1000) {
     toggle = !toggle;
     if (toggle) {
       direction = "100";  
