@@ -1,4 +1,4 @@
-#include <Stepper_28BYJ_48.h>
+#include "AB_Stepper_28BYJ_48.h"
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #include <PubSubClient.h>
@@ -55,7 +55,7 @@ boolean initLoop = true;            //To enable actions first time the loop is r
 boolean ccw = true;                 //Turns counter clockwise to lower the curtain
 boolean toggle = true;              //Switch toggle for up down
 
-Stepper_28BYJ_48 small_stepper(D1, D3, D2, D4); //Initiate stepper driver
+AB_Stepper_28BYJ_48 small_stepper(D1, D3, D2, D4); //Initiate stepper driver
 
 ESP8266WebServer server(80);              // TCP server at port 80 will respond to HTTP requests
 WebSocketsServer webSocket = WebSocketsServer(81);  // WebSockets will respond on port 81
@@ -280,6 +280,7 @@ void setup(void)
 {
   Serial.begin(115200);
   delay(100);
+
   Serial.print("Starting now\n");
 
   //Reset the action
