@@ -54,7 +54,8 @@ String INDEX_HTML = R"(<!DOCTYPE html>
       $('#arrow-stop-man').on('click', function(){instr('0')});
       $('#set-start').on('click', function(){instr('start')});
       $('#set-max').on('click', function(){instr('max');});
-
+      $('#reset').on('click', function(){instr('reset');});
+      $('#rotation').on('click', function(){instr('rotation');}); 
     }, 200);
   };
   $(document).ready(function(){
@@ -220,6 +221,15 @@ String INDEX_HTML = R"(<!DOCTYPE html>
       <ons-col style='text-align:center'>&nbsp;</ons-col>
       <ons-col style='text-align:center'><ons-button id='set-max'>Set Max</ons-button></ons-col>
     </ons-row>
+  </ons-card>
+  <ons-card>
+    <div class='title'>Tools</div>
+    <p>
+      <ons-button id='reset'>Reset</ons-button>
+    </p>
+    <p>
+      <ons-button id='rotation'>Toggle Rotation</ons-button>
+    </p>
   </ons-card>
   </ons-page>
 </template>

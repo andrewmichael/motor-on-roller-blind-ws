@@ -25,11 +25,12 @@ String APpw = "bl1nd54p";           //Hardcoded password for access point
 //----------------------------------------------------
 
 // Version number for checking if there are new code releases and notifying the user
-String version = "1.3.1";
+String version = "1.3.2";
 
 NidayandHelper helper = NidayandHelper();
 
 //Fixed settings for WIFI
+WiFiManager wifiManager;
 WiFiClient espClient;
 PubSubClient psclient(espClient);   //MQTT client
 char mqtt_server[40];             //WIFI config: MQTT server config (optional)
@@ -150,6 +151,20 @@ void processMsg(String res, uint8_t clientnum){
     saveItNow = true;
   }
 
+  if (res == "(reset)") {
+    helper.resetsettings(wifiManager);
+  }
+
+  if (res == "(rotation)") {
+    if (String(config_rotation) == "false") {
+      strcpy(config_rotation, "true");
+    } else  {
+      strcpy(config_rotation, "false");
+    }
+    
+    saveItNow = true;
+  }
+  
   /*
      Below are actions based on inbound MQTT payload
   */
@@ -303,7 +318,7 @@ void setup(void)
   WiFiManagerParameter custom_mqtt_pwd("pwd", "MQTT password", mqtt_server, 40);
   WiFiManagerParameter custom_text2("<script>t = document.createElement('div');t2 = document.createElement('input');t2.setAttribute('type', 'checkbox');t2.setAttribute('id', 'tmpcheck');t2.setAttribute('style', 'width:10%');t2.setAttribute('onclick', \"if(document.getElementById('Rotation').value == 'false'){document.getElementById('Rotation').value = 'true'} else {document.getElementById('Rotation').value = 'false'}\");t3 = document.createElement('label');tn = document.createTextNode('Clockwise rotation');t3.appendChild(t2);t3.appendChild(tn);t.appendChild(t3);document.getElementById('Rotation').style.display='none';document.getElementById(\"Rotation\").parentNode.insertBefore(t, document.getElementById(\"Rotation\"));</script>");
   //Setup WIFI Manager
-  WiFiManager wifiManager;
+  //WiFiManager wifiManager;
 
   //reset settings - for testing
   //clean FS, for testing
