@@ -25,7 +25,7 @@ String APpw = "bl1nd54p";           //Hardcoded password for access point
 //----------------------------------------------------
 
 // Version number for checking if there are new code releases and notifying the user
-String version = "1.3.2";
+String version = "1.3.4";
 
 NidayandHelper helper = NidayandHelper();
 
@@ -33,15 +33,15 @@ NidayandHelper helper = NidayandHelper();
 WiFiManager wifiManager;
 WiFiClient espClient;
 PubSubClient psclient(espClient);   //MQTT client
-char mqtt_server[40];             //WIFI config: MQTT server config (optional)
-char mqtt_port[6] = "1883";       //WIFI config: MQTT port config (optional)
+char mqtt_server[40] = "192.168.0.244";             //WIFI config: MQTT server config (optional)
+char mqtt_port[6] = "8883";       //WIFI config: MQTT port config (optional)
 char mqtt_uid[40];             //WIFI config: MQTT server username (optional)
 char mqtt_pwd[40];             //WIFI config: MQTT server password (optional)
 
 String outputTopic;               //MQTT topic for sending messages
 String inputTopic;                //MQTT topic for listening
 boolean mqttActive = true;
-char config_name[40];             //WIFI config: Bonjour name of device
+char config_name[40] = "LODGE-BLIND-";             //WIFI config: Bonjour name of device
 char config_rotation[40] = "false"; //WIFI config: Detault rotation is CCW
 
 String action;                      //Action manual/auto
@@ -49,6 +49,7 @@ int path = 0;                       //Direction of blind (1 = down, 0 = stop, -1
 int setPos = 0;                     //The set position 0-100% by the client
 long currentPosition = 0;           //Current position of the blind
 long maxPosition = 2000000;         //Max position of the blind. Initial value
+
 boolean loadDataSuccess = false;
 boolean saveItNow = false;          //If true will store positions to SPIFFS
 bool shouldSaveConfig = false;      //Used for WIFI Manager callback to save parameters
@@ -162,9 +163,20 @@ void processMsg(String res, uint8_t clientnum){
       strcpy(config_rotation, "false");
     }
     
+    setRotation(String(config_rotation));
     saveItNow = true;
   }
-  
+
+  if(res == "(restart)") {
+    ESP.restart();
+  }
+
+  if (res.indexOf("(setname:")) {
+    strcpy(config_name, res.substring(res.indexOf(":")).c_str());
+    saveConfig();
+    ESP.restart();
+  }
+
   /*
      Below are actions based on inbound MQTT payload
   */
@@ -276,7 +288,8 @@ void saveConfigCallback () {
 void handleRoot() {
   server.send(200, "text/html", INDEX_HTML);
 }
-void handleNotFound(){
+
+void handleNotFound() {
   String message = "File Not Found\n\n";
   message += "URI: ";
   message += server.uri();
@@ -291,8 +304,15 @@ void handleNotFound(){
   server.send(404, "text/plain", message);
 }
 
-void setup(void)
-{
+void setRotation(String rotation) {
+  if (rotation == "false"){
+    ccw = true;
+  } else {
+    ccw = false;
+  }
+}
+
+void setup(void) {
   Serial.begin(115200);
   delay(100);
 
@@ -412,11 +432,7 @@ void setup(void)
   }
 
   /* Set rotation direction of the blinds */
-  if (String(config_rotation) == "false"){
-    ccw = true;
-  } else {
-    ccw = false;
-  }
+  setRotation(String(config_rotation));
 
   //Update webpage
   INDEX_HTML.replace("{VERSION}","V"+version);
@@ -436,6 +452,7 @@ void setup(void)
     });
     ArduinoOTA.onEnd([]() {
       Serial.println("\nEnd");
+      ESP.restart();
     });
     ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
       Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
@@ -452,8 +469,7 @@ void setup(void)
   }
 }
 
-void loop(void)
-{
+void loop(void) {
   //OTA client code
   ArduinoOTA.handle();
 
@@ -473,7 +489,6 @@ void loop(void)
     helper.mqtt_reconnect(psclient, mqtt_uid, mqtt_pwd, { inputTopic.c_str() });
   }
 
-
   /**
     Storing positioning data and turns off the power to the coils
   */
@@ -488,6 +503,11 @@ void loop(void)
     */
     stopPowerToCoils();
 
+  }
+
+  if (initLoop) {
+    String raw = "{ \"current\":"+String(currentPosition)+", \"max\":"+String(maxPosition)+" }";
+    sendmsg(helper.mqtt_gettopic("init"), raw);
   }
 
   /**

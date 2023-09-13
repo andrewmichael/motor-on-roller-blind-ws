@@ -55,7 +55,9 @@ String INDEX_HTML = R"(<!DOCTYPE html>
       $('#set-start').on('click', function(){instr('start')});
       $('#set-max').on('click', function(){instr('max');});
       $('#reset').on('click', function(){instr('reset');});
-      $('#rotation').on('click', function(){instr('rotation');}); 
+      $('#rotation').on('click', function(){instr('rotation');});
+      $('#restart').on('click', function(){instr('restart');});
+      $('#setname').on('click', function(){instr('setname:' + document.getElementById('bonjorname').value);});
     }, 200);
   };
   $(document).ready(function(){
@@ -229,6 +231,12 @@ String INDEX_HTML = R"(<!DOCTYPE html>
     </p>
     <p>
       <ons-button id='rotation'>Toggle Rotation</ons-button>
+    </p>
+    <p>
+      <ons-button id='restart'>Restart</ons-button>
+    </p>
+    <p>
+      <ons-input id="bonjorname" placeholder="{NAME}"> </ons-input> <ons-button id='setname'>Set</ons-button>
     </p>
   </ons-card>
   </ons-page>

@@ -122,4 +122,5 @@ void NidayandHelper::mqtt_publish(PubSubClient& psclient, String topic, String p
 void NidayandHelper::resetsettings(WiFiManager& wifim){
   SPIFFS.format();
   wifim.resetSettings();
+  ESP.restart();
 }
