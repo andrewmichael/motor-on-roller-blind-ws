@@ -20,7 +20,7 @@
 //--------------- CHANGE PARAMETERS ------------------
 //Configure Default Settings for Access Point logon
 String APid = "blinds";    //Name of access point
-String APpw = "bl1nd54p";           //Hardcoded password for access point
+String APpw = "bl1nd54p";  //Hardcoded password for access point
 
 //----------------------------------------------------
 
@@ -32,17 +32,17 @@ NidayandHelper helper = NidayandHelper();
 //Fixed settings for WIFI
 WiFiManager wifiManager;
 WiFiClient espClient;
-PubSubClient psclient(espClient);   //MQTT client
-char mqtt_server[40] = "192.168.0.244";             //WIFI config: MQTT server config (optional)
-char mqtt_port[6] = "8883";       //WIFI config: MQTT port config (optional)
-char mqtt_uid[40];             //WIFI config: MQTT server username (optional)
-char mqtt_pwd[40];             //WIFI config: MQTT server password (optional)
+PubSubClient psclient(espClient);         //MQTT client
+char mqtt_server[40] = "192.168.0.244";   //WIFI config: MQTT server config (optional)
+char mqtt_port[6] = "8883";               //WIFI config: MQTT port config (optional)
+char mqtt_uid[40] = "";                   //WIFI config: MQTT server username (optional)
+char mqtt_pwd[40] = "";                   //WIFI config: MQTT server password (optional)
 
-String outputTopic;               //MQTT topic for sending messages
-String inputTopic;                //MQTT topic for listening
+String outputTopic;                     //MQTT topic for sending messages
+String inputTopic;                      //MQTT topic for listening
 boolean mqttActive = true;
-char config_name[40] = "LODGE-BLIND-";             //WIFI config: Bonjour name of device
-char config_rotation[40] = "false"; //WIFI config: Detault rotation is CCW
+char config_name[40] = "lodge-blind-";  //WIFI config: Bonjour name of device
+char config_rotation[40] = "false";     //WIFI config: Detault rotation is CCW
 
 String action;                      //Action manual/auto
 int path = 0;                       //Direction of blind (1 = down, 0 = stop, -1 = up)
@@ -59,7 +59,7 @@ boolean toggle = true;              //Switch toggle for up down
 
 AB_Stepper_28BYJ_48 small_stepper(D1, D3, D2, D4); //Initiate stepper driver
 
-ESP8266WebServer server(80);              // TCP server at port 80 will respond to HTTP requests
+ESP8266WebServer server(80);                        // TCP server at port 80 will respond to HTTP requests
 WebSocketsServer webSocket = WebSocketsServer(81);  // WebSockets will respond on port 81
 
 void button_callback(uint8_t pin, uint8_t event, uint8_t count, uint16_t length) {
@@ -96,6 +96,9 @@ bool loadConfig() {
     return false;
   }
   JsonVariant json = helper.getconfig();
+
+  Serial.println(json["config_name"].as<String>());
+  Serial.println(json["mqtt_server"].as<String>());
 
   //Store variables locally
   currentPosition = long(json["currentPosition"]);
@@ -334,8 +337,8 @@ void setup(void) {
   WiFiManagerParameter custom_text("<p><b>Optional MQTT server parameters:</b></p>");
   WiFiManagerParameter custom_mqtt_server("server", "MQTT server", mqtt_server, 40);
   WiFiManagerParameter custom_mqtt_port("port", "MQTT port", mqtt_port, 6);
-  WiFiManagerParameter custom_mqtt_uid("uid", "MQTT username", mqtt_server, 40);
-  WiFiManagerParameter custom_mqtt_pwd("pwd", "MQTT password", mqtt_server, 40);
+  WiFiManagerParameter custom_mqtt_uid("uid", "MQTT username", "", 40);
+  WiFiManagerParameter custom_mqtt_pwd("pwd", "MQTT password", "", 40);
   WiFiManagerParameter custom_text2("<script>t = document.createElement('div');t2 = document.createElement('input');t2.setAttribute('type', 'checkbox');t2.setAttribute('id', 'tmpcheck');t2.setAttribute('style', 'width:10%');t2.setAttribute('onclick', \"if(document.getElementById('Rotation').value == 'false'){document.getElementById('Rotation').value = 'true'} else {document.getElementById('Rotation').value = 'false'}\");t3 = document.createElement('label');tn = document.createTextNode('Clockwise rotation');t3.appendChild(t2);t3.appendChild(tn);t.appendChild(t3);document.getElementById('Rotation').style.display='none';document.getElementById(\"Rotation\").parentNode.insertBefore(t, document.getElementById(\"Rotation\"));</script>");
   //Setup WIFI Manager
   //WiFiManager wifiManager;
@@ -394,8 +397,8 @@ void setup(void) {
   /*
     Setup multi DNS (Bonjour)
     */
-  Serial.println("ConfigName: " + String(config_name));
-  if (MDNS.begin(config_name)) {
+  Serial.println(config_name);
+  if (MDNS.begin("test")) {
     Serial.println("MDNS responder started");
     MDNS.addService("http", "tcp", 80);
     MDNS.addService("ws", "tcp", 81);
@@ -436,7 +439,7 @@ void setup(void) {
 
   //Update webpage
   INDEX_HTML.replace("{VERSION}","V"+version);
-  INDEX_HTML.replace("{NAME}",String(config_name));
+  //INDEX_HTML.replace("{NAME}",String(config_name));
 
 
   //Setup OTA
