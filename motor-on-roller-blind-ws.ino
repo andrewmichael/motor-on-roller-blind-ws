@@ -30,7 +30,6 @@ String version = "1.3.4";
 NidayandHelper helper = NidayandHelper();
 
 //Fixed settings for WIFI
-WiFiManager wifiManager;
 WiFiClient espClient;
 PubSubClient psclient(espClient);         //MQTT client
 char mqtt_server[40] = "192.168.0.244";   //WIFI config: MQTT server config (optional)
@@ -97,17 +96,17 @@ bool loadConfig() {
   }
   JsonVariant json = helper.getconfig();
 
-  Serial.println(json["config_name"].as<String>());
-  Serial.println(json["mqtt_server"].as<String>());
-
   //Store variables locally
   currentPosition = long(json["currentPosition"]);
   maxPosition = long(json["maxPosition"]);
+
   strcpy(config_name, json["config_name"]);
+
   strcpy(mqtt_server, json["mqtt_server"]);
   strcpy(mqtt_port, json["mqtt_port"]);
   strcpy(mqtt_uid, json["mqtt_uid"]);
   strcpy(mqtt_pwd, json["mqtt_pwd"]);
+
   strcpy(config_rotation, json["config_rotation"]);
 
   return true;
@@ -120,13 +119,17 @@ bool loadConfig() {
 bool saveConfig() {
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& json = jsonBuffer.createObject();
+
   json["currentPosition"] = currentPosition;
   json["maxPosition"] = maxPosition;
+
   json["config_name"] = config_name;
+  
   json["mqtt_server"] = mqtt_server;
   json["mqtt_port"] = mqtt_port;
   json["mqtt_uid"] = mqtt_uid;
   json["mqtt_pwd"] = mqtt_pwd;
+
   json["config_rotation"] = config_rotation;
 
   return helper.saveconfig(json);
@@ -156,6 +159,7 @@ void processMsg(String res, uint8_t clientnum){
   }
 
   if (res == "(reset)") {
+    WiFiManager wifiManager;
     helper.resetsettings(wifiManager);
   }
 
@@ -341,7 +345,7 @@ void setup(void) {
   WiFiManagerParameter custom_mqtt_pwd("pwd", "MQTT password", "", 40);
   WiFiManagerParameter custom_text2("<script>t = document.createElement('div');t2 = document.createElement('input');t2.setAttribute('type', 'checkbox');t2.setAttribute('id', 'tmpcheck');t2.setAttribute('style', 'width:10%');t2.setAttribute('onclick', \"if(document.getElementById('Rotation').value == 'false'){document.getElementById('Rotation').value = 'true'} else {document.getElementById('Rotation').value = 'false'}\");t3 = document.createElement('label');tn = document.createTextNode('Clockwise rotation');t3.appendChild(t2);t3.appendChild(tn);t.appendChild(t3);document.getElementById('Rotation').style.display='none';document.getElementById(\"Rotation\").parentNode.insertBefore(t, document.getElementById(\"Rotation\"));</script>");
   //Setup WIFI Manager
-  //WiFiManager wifiManager;
+  WiFiManager wifiManager;
 
   //reset settings - for testing
   //clean FS, for testing
@@ -397,8 +401,8 @@ void setup(void) {
   /*
     Setup multi DNS (Bonjour)
     */
-  Serial.println(config_name);
-  if (MDNS.begin("test")) {
+  Serial.println("confg_name:" + String(config_name));
+  if (MDNS.begin(config_name)) {
     Serial.println("MDNS responder started");
     MDNS.addService("http", "tcp", 80);
     MDNS.addService("ws", "tcp", 81);
@@ -439,7 +443,7 @@ void setup(void) {
 
   //Update webpage
   INDEX_HTML.replace("{VERSION}","V"+version);
-  //INDEX_HTML.replace("{NAME}",String(config_name));
+  INDEX_HTML.replace("{NAME}",String(config_name));
 
 
   //Setup OTA
