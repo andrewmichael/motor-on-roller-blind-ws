@@ -30,6 +30,7 @@ String version = "1.3.4";
 NidayandHelper helper = NidayandHelper();
 
 //Fixed settings for WIFI
+WiFiManager wifiManager;
 WiFiClient espClient;
 PubSubClient psclient(espClient);         //MQTT client
 char mqtt_server[40] = "192.168.0.244";   //WIFI config: MQTT server config (optional)
@@ -159,7 +160,7 @@ void processMsg(String res, uint8_t clientnum){
   }
 
   if (res == "(reset)") {
-    WiFiManager wifiManager;
+    //WiFiManager wifiManager;
     helper.resetsettings(wifiManager);
   }
 
@@ -178,8 +179,8 @@ void processMsg(String res, uint8_t clientnum){
     ESP.restart();
   }
 
-  if (res.indexOf("(setname:")) {
-    strcpy(config_name, res.substring(res.indexOf(":")).c_str());
+  if (res.startsWith("(setname:")) {
+    strcpy(config_name, res.substring(res.indexOf(":") + 1, res.length() - 1).c_str());
     saveConfig();
     ESP.restart();
   }
@@ -345,7 +346,7 @@ void setup(void) {
   WiFiManagerParameter custom_mqtt_pwd("pwd", "MQTT password", "", 40);
   WiFiManagerParameter custom_text2("<script>t = document.createElement('div');t2 = document.createElement('input');t2.setAttribute('type', 'checkbox');t2.setAttribute('id', 'tmpcheck');t2.setAttribute('style', 'width:10%');t2.setAttribute('onclick', \"if(document.getElementById('Rotation').value == 'false'){document.getElementById('Rotation').value = 'true'} else {document.getElementById('Rotation').value = 'false'}\");t3 = document.createElement('label');tn = document.createTextNode('Clockwise rotation');t3.appendChild(t2);t3.appendChild(tn);t.appendChild(t3);document.getElementById('Rotation').style.display='none';document.getElementById(\"Rotation\").parentNode.insertBefore(t, document.getElementById(\"Rotation\"));</script>");
   //Setup WIFI Manager
-  WiFiManager wifiManager;
+  //WiFiManager wifiManager;
 
   //reset settings - for testing
   //clean FS, for testing

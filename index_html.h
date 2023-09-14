@@ -236,7 +236,7 @@ String INDEX_HTML = R"(<!DOCTYPE html>
       <ons-button id='restart'>Restart</ons-button>
     </p>
     <p>
-      <ons-input id="bonjorname" placeholder="{NAME}"> </ons-input> <ons-button id='setname'>Set</ons-button>
+      <ons-button id='setname'>Set</ons-button> <ons-input id="bonjorname" value="{NAME}"> </ons-input>
     </p>
   </ons-card>
   </ons-page>
