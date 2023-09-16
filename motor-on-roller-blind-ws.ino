@@ -98,8 +98,8 @@ bool loadConfig() {
   JsonVariant json = helper.getconfig();
 
   //Store variables locally
-  currentPosition = long(json["currentPosition"]);
-  maxPosition = long(json["maxPosition"]);
+  currentPosition = json["currentPosition"];
+  maxPosition = json["maxPosition"];
 
   strcpy(config_name, json["config_name"]);
 
@@ -398,6 +398,8 @@ void setup(void) {
     currentPosition = 0;
     maxPosition = 2000000;
   }
+
+  Serial.println("currentPosition: " + String(currentPosition) + ", maxPosition: " + String(maxPosition));
 
   /*
     Setup multi DNS (Bonjour)
